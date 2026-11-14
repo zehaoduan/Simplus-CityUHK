@@ -88,7 +88,7 @@ Sheets: `Bus`, `Apparatus`, `Basic`, `NetworkLine`, `NetworkLine_IEEE`, `Advance
 | `ListAdvance(7)` | Plot pole map | 0 |
 | `ListAdvance(8)` | Plot admittance | 0 |
 | `ListAdvance(9)` | Print power-flow and port strings | 0 |
-| `ListAdvance(10)` | Participation / modal analysis | 0 |
+| `ListAdvance(10)` | Participation / modal analysis | 1 |
 
 `NetworkLine_IEEE` cell A3 is `1`. The run prints `Warning: Line data in IEEE form is enabled, which over-writes the original line data.` The empty `NetworkLine` sheet is not the data that was solved.
 
@@ -101,7 +101,7 @@ The checked-in case is the 68-bus full-model family (`ApparatusModelCreate.m` ca
 | 35 | 8th-order synchronous machine plus AVR, PSS, and governor (`SynchronousMachineFull_SMAVRPSSGOV`) |
 | 100 | AC floating bus, inserted for any bus with no apparatus row |
 
-`Bus` column `AC or DC` is 1 on the rows inspected, so there is no DC area. Power flow stays Newton-Raphson, and the DC-area block on participation analysis does not apply. Participation is off only because `ListAdvance(10)` is 0.
+`Bus` column `AC or DC` is 1 on the rows inspected, so there is no DC area. Power flow stays Newton-Raphson, and the DC-area block on participation analysis does not apply. `ListAdvance(10)` is 1, so `Main.m` calls `SimplusGT.Modal.ModalInitialise` after the pole calculation.
 
 ## Verified pole result (14 Nov 2026)
 
@@ -129,16 +129,15 @@ The pole whose frequency is nearest 150 Hz is a different mode: **-77.1222949781
 
 A wider ±20 Hz window also contains -35.89811161352 + j132.7684205427 Hz, which is closer to the axis but 17.2 Hz away from 150 Hz. It is outside the 10 Hz neighborhood used above.
 
-## Participation analysis, if you turn it on
+## Participation analysis
 
-Set `Advance` cell B12 to 1 (`ListAdvance(10)`). `Main.m` then calls `SimplusGT.Modal.ModalInitialise` only when that flag is 1 and `ListBus(:,12)` has no DC marker (`2`). The modal routines pull `ApparatusType`, `GminSS`, `GsysDSS`, and related names with `evalin('base', ...)`. Run `Main` from the base workspace (a script under `matlab -batch`, as above). A function wrapper hides those variables from `evalin('base')` and the modal stage will fail.
+`Advance` cell B12 is 1 (`ListAdvance(10)`). `Main.m` calls `SimplusGT.Modal.ModalInitialise` when that flag is 1 and `ListBus(:,12)` has no DC marker (`2`). The modal routines pull `ApparatusType`, `GminSS`, `GsysDSS`, and related names with `evalin('base', ...)`. Run `Main` from the base workspace (a script under `matlab -batch`, as above). A function wrapper hides those variables from `evalin('base')` and the modal stage will fail.
 
-`ModalInitialise.m` writes `ModalConfig_<name>.xlsx` under `Examples/ParticipationAnalysis/`. The folder must stay; its own README says the toolbox stores participation output there. Two Linux problems are visible in the source and were not executed in the 14 Nov run, because participation was off:
+`ModalInitialise.m` writes `ModalConfig_<name>.xlsx` under `Examples/ParticipationAnalysis/`. The folder must stay; its own README says the toolbox stores participation output there. For `input.xlsx` the file is `Examples/ParticipationAnalysis/ModalConfig_input.xlsx`. `SimplusGT.Modal.ConfigPath` builds that path with `fullfile`, so the same call works on Windows, Mac, and Linux.
 
-- The config path is concatenated with the literal Windows string `Examples\ParticipationAnalysis\`. On Linux `\` is not `filesep`, so the path is wrong.
-- `MdAutoSel` is 0, and that branch calls `winopen`, which is Windows-only.
+The workbook is written with `writecell` and `UseExcel` false. Excel does not need to be installed, and MATLAB does not start Excel COM. `ExcelWrite` still fills the same sheets in the same order (`State-PF`, `Impedance-PF`, `Enabling`) and the same 0/1 cells. `MdAutoSel` is 0, so this step does not run the participation calculation. It writes the workbook, prints the path, and returns. Select modes in that file, save it, then run `SimplusGT.Modal.ModalAnalysis` from the base workspace. With `MdAutoSel = 1` the existing code would auto-select modes and call `ModalAnalysis`. Default is 0.
 
-`ModalAnalysis.m` has the same backslash path. Fix those before expecting participation results on this machine. With `MdAutoSel = 1` the code would try to auto-select modes and call `SimplusGT.Modal.ModalAnalysis` without `winopen`. Default is 0.
+Under `matlab -batch`, the workbook is not opened in a GUI. An interactive session opens it with `winopen` on Windows, `open` on Mac, and `xdg-open` on Linux when a display is set.
 
 ## Messages that are normal for this input
 
@@ -146,6 +145,6 @@ Set `Advance` cell B12 to 1 (`ListAdvance(10)`). `Main.m` then calls `SimplusGT.
 - `Warning: The auto creation of simulink model is disabled.`
 - `Warning: The default plot of pole map is disabled.`
 - `Warning: The default plot of admittance spectrum is disabled.`
-- `Warning: The modal (participation) analysis is disabled or the power system has a dc area.`
+- With B12 set back to 0, `Warning: The modal (participation) analysis is disabled or the power system has a dc area.` With B12 left at 1, that warning is absent and the run writes `ModalConfig_input.xlsx`.
 
 `Stable!` together with `End: run successfully.` is the success signature for the pole run.

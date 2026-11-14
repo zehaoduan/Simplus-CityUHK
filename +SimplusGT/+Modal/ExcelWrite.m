@@ -14,8 +14,8 @@ D=D/(2*pi);
 Mode=diag(D);
 ModeNum = length(Mode);
 
-xlswrite(filename,{'Select states for state participation analysis. Only 1 mode should be selected.'},'State-PF','A1');
-xlswrite(filename,{'write "1" for for selection, others for not'},'State-PF','A2');
+SimplusGT.Modal.WriteSheet(filename,{'Select states for state participation analysis. Only 1 mode should be selected.'},'State-PF','A1');
+SimplusGT.Modal.WriteSheet(filename,{'write "1" for for selection, others for not'},'State-PF','A2');
 StartSpace='A6';
 StateSheet(1,1) = {'Component'};
 StateSheet(1,2) = {'State'};
@@ -99,7 +99,7 @@ elseif AutoSel==1
 else
 end
 
-xlswrite(filename,StateSheet,'State-PF',StartSpace);
+SimplusGT.Modal.WriteSheet(filename,StateSheet,'State-PF',StartSpace);
 
 %%
 %Impedance-PF sheet write
@@ -113,8 +113,8 @@ ModeNum = length(Mode);
 
 StartSpace='A6';
 
-xlswrite(filename,{'Select apparatuses and mode for bode-plot and Modal Layer1&2 analysis'},'Impedance-PF','A1');
-xlswrite(filename,{'write "1" for for selection, others for not'},'Impedance-PF','A2');
+SimplusGT.Modal.WriteSheet(filename,{'Select apparatuses and mode for bode-plot and Modal Layer1&2 analysis'},'Impedance-PF','A1');
+SimplusGT.Modal.WriteSheet(filename,{'write "1" for for selection, others for not'},'Impedance-PF','A2');
 
 %*** Layer1&2 apparatus select
 ImpedanceSheet(1,1) = {'Component selection for Layer1&2'};
@@ -216,7 +216,7 @@ for k = 1:N_Apparatus
         else % floating bus, infinite bus...
         end
 end
-xlswrite(filename,ImpedanceSheet,'Impedance-PF',StartSpace);
+SimplusGT.Modal.WriteSheet(filename,ImpedanceSheet,'Impedance-PF',StartSpace);
 
 %% Enabling sheet writing
 EnableSheet(1,1) = {'Select the function you wish to enable'};
@@ -233,7 +233,7 @@ EnableSheet(11,1) = {'whole-system sensitivity'};
 for i=7:11
     EnableSheet(i,2) = {1};
 end
-xlswrite(filename,EnableSheet,'Enabling','A1');
+SimplusGT.Modal.WriteSheet(filename,EnableSheet,'Enabling','A1');
 
 
 % %% Sensitivity mode select worksheet

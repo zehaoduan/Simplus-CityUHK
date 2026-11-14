@@ -13,17 +13,9 @@
 % MdMode, MdStatePF.
 
 %% Basic
-% Change suffix
+% Config workbook. fullfile keeps the path valid on Windows, Mac, and Linux.
 
-UserdataModal=mfilename('fullpath');
-pos_v =  strfind(UserdataModal,filesep);
-UserdataModal = UserdataModal(1:pos_v(end-2));
-clear pos_v;
-UserDataPure = UserData;
-UserDataPure = strrep(UserDataPure,'.xlsm','');
-UserDataPure = strrep(UserDataPure,'.xlsx','');
-UserDataPure = strrep(UserDataPure,'.xls','');
-UserdataModal = [UserdataModal 'Examples\ParticipationAnalysis\','ModalConfig_', UserDataPure,'.xlsx'];
+UserdataModal = SimplusGT.Modal.ConfigPath(UserData);
 
 %Basic infomation acquirement.
 

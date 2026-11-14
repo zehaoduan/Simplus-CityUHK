@@ -5,28 +5,16 @@
 
 % Author: Yue Zhu
 
-% Warning added by Yitong:
-% Running this function needs to close all excel forms. Then, the
-% UserData.xlsx will be re-opened. This might influence the unsaved work of
-% users.
+% The config workbook is written without Excel. If a previous copy of that
+% workbook is still open, close it so this script can replace the file.
 
 % Generated variables: 
 % UserData Pure: pure name of the user data excel file
 % UserdataModal: full path of the modal config excel file
 %%
-% Set the file saving location and change the suffix
-% this way avoids using  'cd', in case 'cd' is not set correctly at the
-% toolbox.
-UserdataModal=mfilename('fullpath');
-pos_v =  strfind(UserdataModal,filesep);
-UserdataModal = UserdataModal(1:pos_v(end-2));
-clear pos_v;
-
-UserDataPure = UserData;
-UserDataPure = strrep(UserDataPure,'.xlsm','');
-UserDataPure = strrep(UserDataPure,'.xlsx','');
-UserDataPure = strrep(UserDataPure,'.xls','');
-UserdataModal = [UserdataModal 'Examples\ParticipationAnalysis\','ModalConfig_', UserDataPure,'.xlsx'];
+% Set the file saving location. fullfile keeps the path valid on
+% Windows, Mac, and Linux.
+UserdataModal = SimplusGT.Modal.ConfigPath(UserData);
 
 %%
 % Set file name
@@ -52,7 +40,7 @@ fprintf('%s is now ready.\nPlease open the file and select the states and appara
 fprintf('After selection, save the excel file and run SimplusGT.Modal.ModalAnalysis.m.\n');
 %winopen(UserData);
 if MdAutoSel == 0
-    winopen(UserdataModal);
+    SimplusGT.Modal.OpenConfig(UserdataModal);
 end
 if MdAutoSel == 1 && AutoSelResult == 1
     SimplusGT.Modal.ModalAnalysis % run modal analysis
