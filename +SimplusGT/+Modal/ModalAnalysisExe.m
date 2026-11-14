@@ -27,11 +27,9 @@ CaseStudy=evalin('base', 'CaseStudy'); % for case study selection
 
 %% read Modal config file.
 
-[AxisSel, ApparatusSelL12, ModeSelAll, ApparatusSelL3All,StateSel_DSS, ModeSel_DSS] = ...
-    SimplusGT.Modal.ExcelRead(UserdataModal, N_Apparatus, ApparatusType, GminSS);
-
-[StatePFEnable, BodeEnable, Layer12Enable, Layer3Enable, SensEnable] = ...
-    SimplusGT.Modal.EnablingRead(UserdataModal); %Enablling control.
+[AxisSel, ApparatusSelL12, ModeSelAll, ApparatusSelL3All,StateSel_DSS, ModeSel_DSS, ...
+    StatePFEnable, BodeEnable, Layer12Enable, Layer3Enable, SensEnable] = ...
+    SimplusGT.IO.ReadModalConfig(UserdataModal, N_Apparatus, ApparatusType, GminSS);
 
 %check for illegal selection.
 SimplusGT.Modal.DataCheck(AxisSel, ApparatusSelL12, ModeSelAll, ApparatusSelL3All,...
@@ -233,5 +231,14 @@ end
 end
 % Sensitivity Layer 1
 
+if ~exist('MdLayer1', 'var'), MdLayer1 = 0; end
+if ~exist('MdLayer2', 'var'), MdLayer2 = 0; end
+if ~exist('MdLayer3', 'var'), MdLayer3 = 0; end
+if ~exist('MdStatePF', 'var'), MdStatePF = 0; end
+if ~exist('MdMode', 'var'), MdMode = 0; end
+if ~exist('MdSensResult', 'var'), MdSensResult = 0; end
+UserData_ = evalin('base', 'UserData');
+SimplusGT.IO.WriteModalResults(SimplusGT.IO.SiblingName(UserData_, '_modal.json'), ...
+    MdLayer1, MdLayer2, MdLayer3, MdStatePF, MdMode, MdSensResult);
 
 end % end of function

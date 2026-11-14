@@ -2,19 +2,15 @@
 
 % Author(s): Yitong Li
 
-function [UpdateLine,N_Branch,N_Bus] = RearrangeListLine(UserData,ListBus)
-
-%% Load data
-ListLine     = xlsread(UserData,'NetworkLine');
-ListLineIEEE = xlsread(UserData,'NetworkLine_IEEE');
+function [UpdateLine,N_Branch,N_Bus] = RearrangeListLine(ListLine,ListLineIEEE,LineForm,ListBus)
 
 %% IEEE Form to general form
-if ListLineIEEE(1,1) == 1
+if strcmpi(LineForm, 'ieee')
     % "ListLineIEEE" is enabled, which converts "ListLineIEEE" to
     % "ListLine",
     fprintf('Warning: Line data in IEEE form is enabled, which over-writes the original line data.\n')
     
-    ListLineIEEE = ListLineIEEE(4:end,:);
+    % JSON I/O already dropped the enable flag; ListLineIEEE is the data rows.
     
  	% Replace NaN by inf
     netlist_line_NaN = isnan(ListLineIEEE);

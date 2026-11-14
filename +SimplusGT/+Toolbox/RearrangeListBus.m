@@ -3,10 +3,9 @@
 
 % Author(s): Yitong Li
 
-function [UpdateBus,N_Bus] = RearrangeListBus(UserData)
+function [UpdateBus,N_Bus] = RearrangeListBus(ListBus)
 
-% Load data
-ListBus = xlsread(UserData,'Bus');
+% ListBus is already loaded from the JSON netlist.
 
 % Re-order the bus sequence and area
 [i1] = unique(ListBus(:,11));

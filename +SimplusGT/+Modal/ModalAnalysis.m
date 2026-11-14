@@ -6,7 +6,7 @@
 
 %% Notes
 % Before running this program, you need to config the analysis from
-% ModalConfig.xlsx, which should be located in the toolbox root folder.
+% ModalConfig_*.json, which is written under Examples/ParticipationAnalysis.
 % Note1: apparatus numbering keeps the same as bus numbering. For example: the apparatus
 % on bus7 will always be named as Apparatus7.
 % Note2: The final results will be saved in MdLayer1, MdLayer2, MdLayer3,

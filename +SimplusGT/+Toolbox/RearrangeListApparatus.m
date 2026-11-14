@@ -14,58 +14,35 @@
 %
 % "app" means apparatus.
 
-function [AppBusCell,AppTypeCell,ParaCell,N_App] = RearrangeListApparatus(UserData,W0,ListBus)
-
-%% New excel in xlsm format
-% Check if the xlsm format is used
-if strcmp(UserData,'UserData.xlsm')
-    NewExcel = 1;
-else
-    NewExcel = 0;
-end
-
-%% Load data
-[ListApp,ListAppChar]	 = xlsread(UserData,'Apparatus');
-
-%% Prepare
-if NewExcel == 1
-    ListApp = ListApp(3:end,:);       % Remove the first two lines
-    ListApp = ListApp(:,[1:2,4:end]); % Remove the 3rd colomn of subtype
-    [rmax,cmax] = size(ListApp);
-    ListAppNew = NaN(rmax/2,cmax);
-    for r = 1:(rmax/2)
-        ListAppNew(r,1) = ListApp(2*r-1,1);         % Move bus number
-        ListAppNew(r,2) = ListApp(2*r-1,2);         % Move bus number
-        ListAppNew(r,3:end) = ListApp(2*r,3:end);   % Move others
-    end
-   ListApp = ListAppNew;            % Update
-end
-ListAppBusChar = ListAppChar(:,1);
-for k1 = 1:length(ListAppBusChar)
-    if strcmpi(ListAppBusChar{k1},'Bus No.')
-        break;
-    end
-end
-ListAppBusChar = ListAppBusChar(k1+1:end);
-if NewExcel == 1
-    ListAppBusChar = ListAppBusChar(1:2:end,:);
-end
+function [AppBusCell,AppTypeCell,ParaCell,N_App] = RearrangeListApparatus(Apparatus,W0,ListBus)
 
 %% Rearrange data
 % Notes:
-% This section will convert the ListAppBus and ListAppType to AppBusCell
+% This section will convert the JSON apparatus list to AppBusCell
 % and AppTypeCell, i.e., array type to cell type.
 
-[N_App,ColumnMax_Apparatus] = size(ListApp);
-ListAppBus = ListApp(:,1);
-ListAppType = ListApp(:,2);
+if isstruct(Apparatus)
+    Apparatus = num2cell(Apparatus(:));
+end
+N_App = numel(Apparatus);
+N_AppFile = N_App;
+ColumnMax_Apparatus = 0;
 
-% Get the apparatus bus in cell form
+% Get the apparatus bus and type in cell form
 for n = 1:N_App
-    if ~isnan(ListAppBus(n))  % If not NaN, then the bus is a scalar rather han an array in char type
-        AppBusCell{n} = ListAppBus(n);
+    rec = Apparatus{n};
+    bus = rec.bus;
+    if ischar(bus) || isstring(bus)
+        AppBusCell{n} = str2num(char(bus));
     else
-        AppBusCell{n} = str2num(ListAppBusChar{n});
+        bus = double(bus);
+        if numel(bus) == 1
+            AppBusCell{n} = bus;
+        else
+            AppBusCell{n} = bus(:).';
+        end
+    end
+    if numel(AppBusCell{n}) > 1
         [~,~,AreaType]= SimplusGT.Toolbox.CheckBus(AppBusCell{n}(1),ListBus);
         
         % Notes:
@@ -75,11 +52,10 @@ for n = 1:N_App
             [AppBusCell{n}(1),AppBusCell{n}(2)] = deal(AppBusCell{n}(2),AppBusCell{n}(1));
         end
     end
-end
-
-% Get the apparatus type in cell form
-for n = 1:N_App
-    AppTypeCell{n} = ListApp(n,2);
+    AppTypeCell{n} = rec.type;
+    if isfield(rec, 'parameters') && isstruct(rec.parameters)
+        ColumnMax_Apparatus = max(ColumnMax_Apparatus, numel(fieldnames(rec.parameters)));
+    end
 end
 
 % Add floating bus
@@ -315,11 +291,6 @@ Para2000.w0     = W0;
 
 %% Re-arrange apparatus data
 
-% Find the index of user-defined data
-ListApparatus_NaN = isnan(ListApp(:,3:ColumnMax_Apparatus));    % Find NaN
-[row,column] = find(ListApparatus_NaN == 0);     
-column = column+2;
-
 % Initialize the apparatus parameters by default parameters
 for i = 1:N_App
     AppBus   = AppBusCell{i};
@@ -362,189 +333,29 @@ end
 
 % Replace the default data by customized data
 %
-% Notes: 
-% This method can reduce the calculation time of "for" loop. The "for" loop
-% runs only when "row" is not empty.
-%
-% The sequence of cases are determined by the excel form. This also
-% decouples the sequence between the excel form and the system object.
-for i = 1:length(row)
-  	AppBus   = AppBusCell{row(i)};
-	AppType	= AppTypeCell{row(i)};
- 	UserValue 	= ListApp(row(i),column(i));     % Customized value
-    SwitchFlag = column(i)-2;                   	% Find the updated parameter
-  	if floor(AppType/10) == 0                    % Synchronous machine
-        switch SwitchFlag 
-         	case 1; ParaCell{row(i)}.J  = UserValue;
-            case 2; ParaCell{row(i)}.D  = UserValue;
-            case 3; ParaCell{row(i)}.wL = UserValue;
-            case 4; ParaCell{row(i)}.R  = UserValue; 
-            otherwise
-                error(['Error: paramter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
+% Notes:
+% JSON parameters are named fields. Only fields present in the netlist
+% overlay the defaults, matching the former Excel NaN-skip behaviour.
+for i = 1:N_AppFile
+    rec = Apparatus{i};
+    if ~isfield(rec, 'parameters') || isempty(rec.parameters) || ~isstruct(rec.parameters)
+        continue
+    end
+    AppBus = AppBusCell{i};
+    AppType = AppTypeCell{i};
+    userPara = rec.parameters;
+    fn = fieldnames(userPara);
+    for k = 1:numel(fn)
+        UserValue = SimplusGT.IO.FromJsonValue(userPara.(fn{k}));
+        if isempty(UserValue)
+            continue
         end
-    elseif (floor(AppType/10) == 1)              % Grid-following inverter
-        switch SwitchFlag
-            case 1; ParaCell{row(i)}.V_dc   = UserValue;
-            case 2; ParaCell{row(i)}.C_dc   = UserValue;
-            case 3; ParaCell{row(i)}.wLf    = UserValue;
-            case 4; ParaCell{row(i)}.R      = UserValue;
-            case 5; ParaCell{row(i)}.f_v_dc = UserValue;
-            case 6; ParaCell{row(i)}.f_pll  = UserValue;
-            case 7; ParaCell{row(i)}.f_i_dq = UserValue;
-            case 8; ParaCell{row(i)}.Sbase  = UserValue;    
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
-        end
-    elseif floor(AppType/10) == 2                % Grid-forming inverter
-        switch SwitchFlag
-            case 1;  ParaCell{row(i)}.wLf     = UserValue;
-          	case 2;  ParaCell{row(i)}.Rf      = UserValue;
-          	case 3;  ParaCell{row(i)}.wCf     = UserValue;
-           	case 4;  ParaCell{row(i)}.wLc  	  = UserValue;
-         	case 5;  ParaCell{row(i)}.Rc  	  = UserValue;
-           	case 6;  ParaCell{row(i)}.Xov 	  = UserValue;
-            case 7;  ParaCell{row(i)}.Dw      = UserValue;
-            case 8;  ParaCell{row(i)}.fdroop  = UserValue;
-          	case 9;  ParaCell{row(i)}.fvdq    = UserValue;
-          	case 10; ParaCell{row(i)}.fidq    = UserValue; 
-            case 11; ParaCell{row(i)}.Sbase   = UserValue;
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
-        end
-        
-    elseif floor(AppType/10) == 3 %full model
-        switch SwitchFlag
-            case 1; ParaCell{row(i)}.X=UserValue;
-            case 2; ParaCell{row(i)}.R=UserValue;
-            case 3; ParaCell{row(i)}.Xd=UserValue; 
-            case 4; ParaCell{row(i)}.Xd1=UserValue; 
-            case 5; ParaCell{row(i)}.Xd2=UserValue; 
-            case 6; ParaCell{row(i)}.Td1=UserValue; 
-            case 7; ParaCell{row(i)}.Td2=UserValue;
-            case 8; ParaCell{row(i)}.Xq=UserValue;
-            case 9; ParaCell{row(i)}.Xq1=UserValue;
-            case 10;ParaCell{row(i)}.Xq2=UserValue;
-            case 11;ParaCell{row(i)}.Tq1=UserValue;
-            case 12;ParaCell{row(i)}.Tq2=UserValue;
-            case 13;ParaCell{row(i)}.H=UserValue;
-            case 14;ParaCell{row(i)}.D=UserValue;
-            case 15;ParaCell{row(i)}.TR=UserValue;
-            case 16;ParaCell{row(i)}.KA=UserValue;
-            case 17;ParaCell{row(i)}.TA=UserValue;
-            case 18;ParaCell{row(i)}.VRmax=UserValue;
-            case 19;ParaCell{row(i)}.VRmin=UserValue;
-            case 20;ParaCell{row(i)}.KE=UserValue;
-            case 21;ParaCell{row(i)}.TE=UserValue;
-            case 22;ParaCell{row(i)}.E1=UserValue;
-            case 23;ParaCell{row(i)}.SE1=UserValue;
-            case 24;ParaCell{row(i)}.E2=UserValue;
-            case 25;ParaCell{row(i)}.SE2=UserValue;
-            case 26;ParaCell{row(i)}.KF=UserValue;
-            case 27;ParaCell{row(i)}.TF=UserValue;
-            case 28;ParaCell{row(i)}.KP=UserValue;
-            case 29;ParaCell{row(i)}.KI=UserValue;
-            case 30;ParaCell{row(i)}.KD=UserValue;
-            case 31;ParaCell{row(i)}.TD=UserValue;
-            case 32;ParaCell{row(i)}.KPSS=UserValue;
-            case 33;ParaCell{row(i)}.TW=UserValue;
-            case 34;ParaCell{row(i)}.T11=UserValue;
-            case 35;ParaCell{row(i)}.T12=UserValue;
-            case 36;ParaCell{row(i)}.T21=UserValue;
-            case 37;ParaCell{row(i)}.T22=UserValue;
-            case 38;ParaCell{row(i)}.T31=UserValue;
-            case 39;ParaCell{row(i)}.T32=UserValue;
-            case 40;ParaCell{row(i)}.VSSmax=UserValue;
-            case 41;ParaCell{row(i)}.VSSmin=UserValue;
-            case 42;ParaCell{row(i)}.Rgov=UserValue;
-            case 43;ParaCell{row(i)}.T1gov=UserValue;
-            case 44;ParaCell{row(i)}.T2gov=UserValue;
-            case 45;ParaCell{row(i)}.T3gov=UserValue;
-            case 46;ParaCell{row(i)}.Dtgov=UserValue;
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(bus) 'type ' num2str(type) '.']);
-        end
-    
-    elseif floor(AppType/10) == 4 %full model Cyprus
-        switch SwitchFlag
-            case 1; ParaCell{row(i)}.Sbase_SM=UserValue;
-            case 2; ParaCell{row(i)}.X=UserValue;
-            case 3; ParaCell{row(i)}.R=UserValue;
-            case 4; ParaCell{row(i)}.Xd=UserValue; %synchronous reactance in d axis
-            case 5; ParaCell{row(i)}.Xd1=UserValue; %transient reactance
-            case 6; ParaCell{row(i)}.Xd2=UserValue; %subtransient reactance
-            case 7; ParaCell{row(i)}.Td1=UserValue; %d-axis open circuit transient time constant
-            case 8; ParaCell{row(i)}.Td2=UserValue; %d-axis open circuit sub-transient time constant
-            case 9; ParaCell{row(i)}.Xq=UserValue;
-            case 10; ParaCell{row(i)}.Xq1=UserValue;
-            case 11; ParaCell{row(i)}.Xq2=UserValue;
-            case 12; ParaCell{row(i)}.Tq1=UserValue;
-            case 13; ParaCell{row(i)}.Tq2=UserValue;
-            case 14; ParaCell{row(i)}.H=UserValue;
-            case 15; ParaCell{row(i)}.D=UserValue;
-            case 16; ParaCell{row(i)}.Dpu=UserValue;
-            case 17; ParaCell{row(i)}.SG10=UserValue;
-            case 18; ParaCell{row(i)}.SG12=UserValue; 
-            %AVR
-            case 19; ParaCell{row(i)}.Tr=UserValue;
-            case 20; ParaCell{row(i)}.Ka=UserValue;
-            case 21; ParaCell{row(i)}.Ta=UserValue;
-            case 22; ParaCell{row(i)}.Vrmax=UserValue;
-            case 23; ParaCell{row(i)}.Vrmin=UserValue;
-            case 24; ParaCell{row(i)}.Ke=UserValue;
-            case 25; ParaCell{row(i)}.Te=UserValue;
-            case 26; ParaCell{row(i)}.Kf=UserValue;
-            case 27; ParaCell{row(i)}.Tf=UserValue;
-            case 28; ParaCell{row(i)}.E1=UserValue;
-            case 29; ParaCell{row(i)}.SEE1=UserValue;
-            case 30; ParaCell{row(i)}.E2=UserValue;
-            case 31; ParaCell{row(i)}.SEE2=UserValue;
-            %PSS
-            case 32; ParaCell{row(i)}.T1=UserValue;
-            case 33; ParaCell{row(i)}.T2=UserValue;
-            case 34; ParaCell{row(i)}.T3=UserValue;
-            case 35; ParaCell{row(i)}.T4=UserValue;
-            case 36; ParaCell{row(i)}.Tw=UserValue;
-            case 37; ParaCell{row(i)}.Kpss=UserValue;
-            case 38; ParaCell{row(i)}.Vpssmin=UserValue;
-            case 39; ParaCell{row(i)}.Vpssmax=UserValue;
-            %Governor
-            case 40; ParaCell{row(i)}.Rgov=UserValue;
-            case 41; ParaCell{row(i)}.T1gov=UserValue;
-            case 42; ParaCell{row(i)}.T2gov=UserValue;
-            case 43; ParaCell{row(i)}.T3gov=UserValue;
-            case 44; ParaCell{row(i)}.T4gov=UserValue;
-            case 45; ParaCell{row(i)}.T5gov=UserValue;
-            case 46; ParaCell{row(i)}.Fgov=UserValue;
-            case 47; ParaCell{row(i)}.Pmax_gov=UserValue;
-            %Vbase    
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(bus) 'type ' num2str(type) '.']);
-        end
-        
-    elseif floor(AppType/10) == 101 % Grid-feeding buck
-        switch SwitchFlag
-            case 1;  ParaCell{row(i)}.Vdc   = UserValue;
-          	case 2;  ParaCell{row(i)}.Cdc   = UserValue;
-          	case 3;  ParaCell{row(i)}.wLf   = UserValue;
-           	case 4;  ParaCell{row(i)}.R  	= UserValue;
-         	case 5;  ParaCell{row(i)}.fi  	= UserValue;
-           	case 6;  ParaCell{row(i)}.fvdc 	= UserValue;
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
-        end
-    elseif floor(AppType/10) == 200 % Interlink ac-dc converter
-        switch SwitchFlag
-            case 1;  ParaCell{row(i)}.C_dc  = UserValue;
-            case 2;  ParaCell{row(i)}.wL_ac = UserValue;
-            case 3;  ParaCell{row(i)}.R_ac  = UserValue;
-            case 4;  ParaCell{row(i)}.wL_dc = UserValue;
-            case 5;  ParaCell{row(i)}.R_dc  = UserValue;
-            case 6;  ParaCell{row(i)}.fidq  = UserValue;
-            case 7;  ParaCell{row(i)}.fvdc  = UserValue;
-            case 8;  ParaCell{row(i)}.fpll  = UserValue;
-            otherwise
-                error(['Error: parameter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
-        end
+        ParaCell{i}.(fn{k}) = UserValue;
+    end
+    if isempty(fn)
+        % no user parameters
+    elseif numel(fn) > 50
+        error(['Error: parameter overflow, bus ' num2str(AppBus) 'type ' num2str(AppType) '.']);
     end
 end
 

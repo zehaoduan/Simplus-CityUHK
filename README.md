@@ -1,8 +1,8 @@
 # Simplus-CityUHK (14 Nov 2026)
 
-This is a MATLAB power system modal analysis program forked from the work by Professor Yue Zhu, Professor Yunjie Gu, and Professor Yitong Li. The toolbox builds a descriptor state-space model of the network in `input.xlsx`, runs a power flow, computes the system poles, and optionally does participation analysis.
+This is a MATLAB power system modal analysis program forked from the work by Professor Yue Zhu, Professor Yunjie Gu, and Professor Yitong Li. The toolbox builds a descriptor state-space model of the network in `input.json`, runs a power flow, computes the system poles, and optionally does participation analysis. All program I/O is pretty-printed JSON.
 
-Checked on this machine on 14 Nov 2026 with MATLAB R2026b (`26.2.0.3386108`). The binary is `/home/zehao/.local/bin/matlab`, which is `/usr/local/R2026b/bin/matlab`. The whole run of the checked-in `input.xlsx` took about 27 seconds and exited 0.
+Checked on this machine on 14 Nov 2026 with MATLAB R2026b (`26.2.0.3386108`). The binary is `/home/zehao/.local/bin/matlab`, which is `/usr/local/R2026b/bin/matlab`. The whole run of the checked-in `input.json` took about 27 seconds and exited 0.
 
 ## Run the pole calculation
 
@@ -12,18 +12,18 @@ From this directory:
 matlab -batch "run('main.m')"
 ```
 
-`main.m` is the customer entry point. It clears the workspace, sets `UserData = 'input.xlsx'`, and calls `SimplusGT.Toolbox.Main`. That call is a script, not a function: `+SimplusGT/+Toolbox/Main.m` has no `function` line, so it executes in the caller workspace. `UserData` must already exist there. `Main.m` is not given arguments.
+`main.m` is the customer entry point. It clears the workspace, sets `UserData = 'input.json'`, and calls `SimplusGT.Toolbox.Main`. That call is a script, not a function: `+SimplusGT/+Toolbox/Main.m` has no `function` line, so it executes in the caller workspace. `UserData` must already exist there. `Main.m` is not given arguments.
 
-`Main.m` locates itself with `mfilename('fullpath')`, walks up three directories (`+Toolbox` → `+SimplusGT` → this repo), and `cd`s there before reading the spreadsheet. A relative `input.xlsx` is correct after that `cd`. Put this repo on the MATLAB path before the call if the process did not start here (`addpath` of the repo root). The current directory is on the path after `cd`.
+`Main.m` locates itself with `mfilename('fullpath')`, walks up three directories (`+Toolbox` → `+SimplusGT` → this repo), and `cd`s there before reading the netlist. A relative `input.json` is correct after that `cd`. Put this repo on the MATLAB path before the call if the process did not start here (`addpath` of the repo root). The current directory is on the path after `cd`.
 
-Headless `-batch` is enough for the checked-in case. Do not pass `-nojvm`. `xlsread` needs Java, and it worked on Linux with no Excel install. Simulink creation and the pole/admittance plots are off in `input.xlsx`, so there is no display requirement.
+Headless `-batch` is enough for the checked-in case. Simulink creation and the pole/admittance plots are off in `input.json`, so there is no display requirement.
 
-`matlab -batch "run('main.m')"` proves the toolbox runs. It does not print pole values. The script only prints `Stable!` or `Warning: Unstable!`, then `End: run successfully.` Poles stay in the variable `pole_sys` in that same workspace and disappear when `-batch` exits. To inspect them, post-process in the same script, before MATLAB exits:
+`matlab -batch "run('main.m')"` proves the toolbox runs. It prints `Stable!` or `Warning: Unstable!`, then `End: run successfully.` Poles are written to `input_results.json` next to the netlist, and also stay in the variable `pole_sys` in that same workspace. To inspect them in the workspace, post-process in the same script, before MATLAB exits:
 
 ```matlab
 cd('/home/zehao/gaojiaoshe/Simplus-CityUHK');
 addpath(pwd);
-UserData = 'input.xlsx';
+UserData = 'input.json';
 SimplusGT.Toolbox.Main();   % script; leaves pole_sys in this workspace
 
 p = pole_sys(:);
@@ -42,8 +42,8 @@ The comment at the top of `+SimplusGT/+Toolbox/Main.m` says to use `Main_Custome
 
 Order inside `SimplusGT.Toolbox.Main`:
 
-1. Read `input.xlsx` sheets `Basic`, `Advance`, `Bus`, the line sheet, and `Apparatus`.
-2. Power flow. Algorithm 2 is Newton-Raphson. Algorithm 1 is Gauss-Seidel. A DC area (`Bus` column `AC or DC` equal to 2) forces Gauss-Seidel.
+1. Read `input.json` (`basic`, `advance`, `buses`, `lines`, `apparatuses`).
+2. Power flow. Algorithm 2 is Newton-Raphson. Algorithm 1 is Gauss-Seidel. A DC area (`buses[].ac_or_dc` equal to 2) forces Gauss-Seidel.
 3. Build the line admittance, each apparatus model, and the whole-system descriptor model `GsysDSS`.
 4. Reject the model if it is improper (more zeros than poles). This case printed `Proper!` and built the minimum realization `GminSS`.
 5. Poles and the stability test.
@@ -60,37 +60,37 @@ pole_sys = pole(GsysDSS)/2/pi;
 
 `pole_sys` is in hertz, not rad/s. Both the real part (damping) and the imaginary part (oscillation frequency) are in Hz. The pole-map axes are labeled that way. The underlying eigenvalue in rad/s is `pole_sys * 2 * pi`. The conjugate pair is the positive-imaginary pole and its negative-imaginary twin. Report the positive-frequency one.
 
-## `input.xlsx`
+## `input.json`
 
-Sheets: `Bus`, `Apparatus`, `Basic`, `NetworkLine`, `NetworkLine_IEEE`, `Advance`.
+Pretty-printed JSON with named fields. Top-level keys: `notes` (ignored by the program), `basic`, `advance`, `buses`, `lines`, `apparatuses`. Infinity in line data is the string `"inf"`. An interlink apparatus uses `"bus": [3, 2]`. Omitted apparatus parameters keep the toolbox defaults.
 
-`xlsread` returns the numeric cells, not the text labels. The toolbox then uses linear indices into that numeric vector. For the checked-in sheets the numbers fall in this order:
+`basic`:
 
-`Basic` column B, from the top numeric cell:
-
-| Index | Setting | Checked-in value |
+| Field | Setting | Checked-in value |
 | --- | --- | --- |
-| `ListBasic(1)` | Sampling frequency (Hz) | 6000 |
-| `ListBasic(2)` | Base frequency (Hz) | 60 |
-| `ListBasic(3)` | Base power (VA) | 1 |
-| `ListBasic(4)` | Base voltage (V) | 1 |
+| `sampling_frequency_Hz` | Sampling frequency (Hz) | 6000 |
+| `base_frequency_Hz` | Base frequency (Hz) | 60 |
+| `base_power_VA` | Base power (VA) | 1 |
+| `base_voltage_V` | Base voltage (V) | 1 |
 
-`Advance` column B, from the first numeric cell (sheet row 3). These indices match `Main.m`:
+`advance`:
 
-| Index | Setting | Checked-in value |
+| Field | Setting | Checked-in value |
 | --- | --- | --- |
-| `ListAdvance(1)` | Discretization method | 2 |
-| `ListAdvance(2)` | Linearization times | 1 |
-| `ListAdvance(3)` | Discretization damping flag | 1 |
-| `ListAdvance(4)` | Direct feedthrough | 0 |
-| `ListAdvance(5)` | Power flow algorithm (1 GS, 2 NR) | 2 |
-| `ListAdvance(6)` | Create Simulink model | 0 |
-| `ListAdvance(7)` | Plot pole map | 0 |
-| `ListAdvance(8)` | Plot admittance | 0 |
-| `ListAdvance(9)` | Print power-flow and port strings | 0 |
-| `ListAdvance(10)` | Participation / modal analysis | 1 |
+| `discretization_method` | Discretization method | 2 |
+| `linearization_times` | Linearization times | 1 |
+| `discretization_damping_flag` | Discretization damping flag | 1 |
+| `direct_feedthrough` | Direct feedthrough | 0 |
+| `power_flow_algorithm` | Power flow algorithm (1 GS, 2 NR) | 2 |
+| `create_simulink_model` | Create Simulink model | 0 |
+| `plot_pole_map` | Plot pole map | 0 |
+| `plot_admittance` | Plot admittance | 0 |
+| `print_output` | Print power-flow and port strings | 0 |
+| `modal_analysis` | Participation / modal analysis | 0 |
 
-`NetworkLine_IEEE` cell A3 is `1`. The run prints `Warning: Line data in IEEE form is enabled, which over-writes the original line data.` The empty `NetworkLine` sheet is not the data that was solved.
+`lines.form` is `"ieee"` for the checked-in case. The run prints `Warning: Line data in IEEE form is enabled, which over-writes the original line data.` IEEE branches use `R_pu`, `X_pu`, `B_pu`, `G_pu`, `turns_ratio`. Toolbox form uses `R_pu`, `wL_pu`, `wC_pu`, `G_pu`, `turns_ratio`.
+
+Example netlists under `Examples/` are the same JSON schema (`IEEE_14Bus.json`, `SgInfiniteBus.json`, hybrid cases, and so on). Historical `.xlsx` copies remain in those folders; the program does not read them.
 
 The checked-in case is the 68-bus full-model family (`ApparatusModelCreate.m` calls types 30–39 "full models for 68 bus"). Bus numbers in the line list reach 68. Apparatus codes used in this file:
 
@@ -101,7 +101,7 @@ The checked-in case is the 68-bus full-model family (`ApparatusModelCreate.m` ca
 | 35 | 8th-order synchronous machine plus AVR, PSS, and governor (`SynchronousMachineFull_SMAVRPSSGOV`) |
 | 100 | AC floating bus, inserted for any bus with no apparatus row |
 
-`Bus` column `AC or DC` is 1 on the rows inspected, so there is no DC area. Power flow stays Newton-Raphson, and the DC-area block on participation analysis does not apply. `ListAdvance(10)` is 1, so `Main.m` calls `SimplusGT.Modal.ModalInitialise` after the pole calculation.
+`buses[].ac_or_dc` is 1 on the rows inspected, so there is no DC area. Power flow stays Newton-Raphson, and the DC-area block on participation analysis does not apply. `advance.modal_analysis` is 0, so `Main.m` skips `SimplusGT.Modal.ModalInitialise` after the pole calculation.
 
 ## Verified pole result (14 Nov 2026)
 
@@ -131,13 +131,13 @@ A wider ±20 Hz window also contains -35.89811161352 + j132.7684205427 Hz, which
 
 ## Participation analysis
 
-`Advance` cell B12 is 1 (`ListAdvance(10)`). `Main.m` calls `SimplusGT.Modal.ModalInitialise` when that flag is 1 and `ListBus(:,12)` has no DC marker (`2`). The modal routines pull `ApparatusType`, `GminSS`, `GsysDSS`, and related names with `evalin('base', ...)`. Run `Main` from the base workspace (a script under `matlab -batch`, as above). A function wrapper hides those variables from `evalin('base')` and the modal stage will fail.
+`advance.modal_analysis` is 0 in the checked-in `input.json` (`ListAdvance(10)`). `Main.m` calls `SimplusGT.Modal.ModalInitialise` when that flag is 1 and `ListBus(:,12)` has no DC marker (`2`). The modal routines pull `ApparatusType`, `GminSS`, `GsysDSS`, and related names with `evalin('base', ...)`. Run `Main` from the base workspace (a script under `matlab -batch`, as above). A function wrapper hides those variables from `evalin('base')` and the modal stage will fail.
 
-`ModalInitialise.m` writes `ModalConfig_<name>.xlsx` under `Examples/ParticipationAnalysis/`. The folder must stay; its own README says the toolbox stores participation output there. For `input.xlsx` the file is `Examples/ParticipationAnalysis/ModalConfig_input.xlsx`. `SimplusGT.Modal.ConfigPath` builds that path with `fullfile`, so the same call works on Windows, Mac, and Linux.
+`ModalInitialise.m` writes `ModalConfig_<name>.json` under `Examples/ParticipationAnalysis/`. The folder must stay; its own README says the toolbox stores participation output there. For `input.json` the file is `Examples/ParticipationAnalysis/ModalConfig_input.json`. `SimplusGT.Modal.ConfigPath` builds that path with `fullfile`, so the same call works on Windows, Mac, and Linux.
 
-The workbook is written with `writecell` and `UseExcel` false. Excel does not need to be installed, and MATLAB does not start Excel COM. `ExcelWrite` still fills the same sheets in the same order (`State-PF`, `Impedance-PF`, `Enabling`) and the same 0/1 cells. `MdAutoSel` is 0, so this step does not run the participation calculation. It writes the workbook, prints the path, and returns. Select modes in that file, save it, then run `SimplusGT.Modal.ModalAnalysis` from the base workspace. With `MdAutoSel = 1` the existing code would auto-select modes and call `ModalAnalysis`. Default is 0.
+The config is pretty-printed JSON with named lists (`state_pf`, `impedance_pf`, `enabling`) and the same 0/1 select flags as before. `MdAutoSel` is 0, so this step does not run the participation calculation. It writes the file, prints the path, and returns. Select modes in that file, save it, then run `SimplusGT.Modal.ModalAnalysis` from the base workspace. With `MdAutoSel = 1` the existing code would auto-select modes and call `ModalAnalysis`. Default is 0. After `ModalAnalysis` runs, results are written to `<stem>_modal.json` next to the netlist.
 
-Under `matlab -batch`, the workbook is not opened in a GUI. An interactive session opens it with `winopen` on Windows, `open` on Mac, and `xdg-open` on Linux when a display is set.
+Under `matlab -batch`, the config file is not opened in a GUI. An interactive session opens it with `winopen` on Windows, `open` on Mac, and `xdg-open` on Linux when a display is set.
 
 ## Messages that are normal for this input
 
@@ -145,6 +145,6 @@ Under `matlab -batch`, the workbook is not opened in a GUI. An interactive sessi
 - `Warning: The auto creation of simulink model is disabled.`
 - `Warning: The default plot of pole map is disabled.`
 - `Warning: The default plot of admittance spectrum is disabled.`
-- With B12 set back to 0, `Warning: The modal (participation) analysis is disabled or the power system has a dc area.` With B12 left at 1, that warning is absent and the run writes `ModalConfig_input.xlsx`.
+- With `modal_analysis` set to 0, `Warning: The modal (participation) analysis is disabled or the power system has a dc area.` With it set to 1, that warning is absent and the run writes `ModalConfig_input.json`.
 
 `Stable!` together with `End: run successfully.` is the success signature for the pole run.

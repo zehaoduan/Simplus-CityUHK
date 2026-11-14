@@ -1,0 +1,471 @@
+{
+  "notes": {
+    "bus_type": "1=slack, 2=PV, 3=PQ (DC: 1=slack/V, 3=P)",
+    "ac_or_dc": "1=AC, 2=DC",
+    "power_flow_algorithm": "1=Gauss-Seidel, 2=Newton-Raphson",
+    "line_form": "ieee uses R,X,B,G,turns_ratio; toolbox uses R,wL,wC,G,turns_ratio",
+    "apparatus_type": "0-9 SM; 10-19 GFL; 20-29 GFM; 30-39 SM full; 40-49 SM Cyprus; 90 AC infinite; 100 AC floating; 1010 DC buck; 1090 DC infinite; 1100 DC floating; 2000-2009 interlink"
+  },
+  "basic": {
+    "sampling_frequency_Hz": 30000,
+    "base_frequency_Hz": 60,
+    "base_power_VA": 1,
+    "base_voltage_V": 1
+  },
+  "advance": {
+    "discretization_method": 2,
+    "linearization_times": 1,
+    "discretization_damping_flag": 1,
+    "direct_feedthrough": 0,
+    "power_flow_algorithm": 2,
+    "create_simulink_model": 0,
+    "plot_pole_map": 1,
+    "plot_admittance": 1,
+    "print_output": 1,
+    "modal_analysis": 1
+  },
+  "buses": [
+    {
+      "bus": 1,
+      "type": 1,
+      "Vsp_pu": 1.06,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0,
+      "QLi_pu": 0,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 2,
+      "type": 2,
+      "Vsp_pu": 1.045,
+      "theta_rad": 0,
+      "PGi_pu": 0.4,
+      "QGi_pu": 0.424,
+      "PLi_pu": 0.217,
+      "QLi_pu": 0.127,
+      "Qmin_pu": -0.4,
+      "Qmax_pu": 0.5,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 3,
+      "type": 2,
+      "Vsp_pu": 1.01,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0.23399999999999999,
+      "PLi_pu": 0.94200000000000006,
+      "QLi_pu": 0.19,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0.4,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 4,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.478,
+      "QLi_pu": -0.039,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 5,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.076,
+      "QLi_pu": 0.016,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 6,
+      "type": 2,
+      "Vsp_pu": 1.07,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0.122,
+      "PLi_pu": 0.11199999999999999,
+      "QLi_pu": 0.075,
+      "Qmin_pu": -0.06,
+      "Qmax_pu": 0.24,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 7,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0,
+      "QLi_pu": 0,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 8,
+      "type": 2,
+      "Vsp_pu": 1.09,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0.174,
+      "PLi_pu": 0,
+      "QLi_pu": 0,
+      "Qmin_pu": -0.06,
+      "Qmax_pu": 0.24,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 9,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.295,
+      "QLi_pu": 0.166,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 10,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.09,
+      "QLi_pu": 0.057999999999999996,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 11,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.035,
+      "QLi_pu": 0.018000000000000002,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 12,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.061,
+      "QLi_pu": 0.016,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 13,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.135,
+      "QLi_pu": 0.057999999999999996,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 14,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0.149,
+      "QLi_pu": 0.05,
+      "Qmin_pu": 0,
+      "Qmax_pu": 0,
+      "area": 1,
+      "ac_or_dc": 1
+    }
+  ],
+  "lines": {
+    "form": "ieee",
+    "branches": [
+      {
+        "from": 1,
+        "to": 2,
+        "R_pu": 0.01938,
+        "X_pu": 0.05917,
+        "B_pu": 0.0528,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 1,
+        "to": 5,
+        "R_pu": 0.05403,
+        "X_pu": 0.22304,
+        "B_pu": 0.0492,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "R_pu": 0.04699,
+        "X_pu": 0.19797,
+        "B_pu": 0.0438,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 2,
+        "to": 4,
+        "R_pu": 0.05811,
+        "X_pu": 0.17632,
+        "B_pu": 0.034,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 2,
+        "to": 5,
+        "R_pu": 0.05695,
+        "X_pu": 0.17388,
+        "B_pu": 0.0346,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 3,
+        "to": 4,
+        "R_pu": 0.06701,
+        "X_pu": 0.17103,
+        "B_pu": 0.0128,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 4,
+        "to": 5,
+        "R_pu": 0.01335,
+        "X_pu": 0.04211,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 4,
+        "to": 7,
+        "R_pu": 0,
+        "X_pu": 0.20912,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 0.978
+      },
+      {
+        "from": 4,
+        "to": 9,
+        "R_pu": 0,
+        "X_pu": 0.55618,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 0.969
+      },
+      {
+        "from": 5,
+        "to": 6,
+        "R_pu": 0,
+        "X_pu": 0.25202,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 0.932
+      },
+      {
+        "from": 6,
+        "to": 11,
+        "R_pu": 0.09498,
+        "X_pu": 0.1989,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 6,
+        "to": 12,
+        "R_pu": 0.12291,
+        "X_pu": 0.25581,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 6,
+        "to": 13,
+        "R_pu": 0.06615,
+        "X_pu": 0.13027,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 7,
+        "to": 8,
+        "R_pu": 0,
+        "X_pu": 0.17615,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 7,
+        "to": 9,
+        "R_pu": 0,
+        "X_pu": 0.11001,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 9,
+        "to": 10,
+        "R_pu": 0.03181,
+        "X_pu": 0.0845,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 9,
+        "to": 14,
+        "R_pu": 0.12711,
+        "X_pu": 0.27038,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 10,
+        "to": 11,
+        "R_pu": 0.08205,
+        "X_pu": 0.19207,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 12,
+        "to": 13,
+        "R_pu": 0.22092,
+        "X_pu": 0.19988,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 13,
+        "to": 14,
+        "R_pu": 0.17093,
+        "X_pu": 0.34802,
+        "B_pu": 0,
+        "G_pu": 0,
+        "turns_ratio": 1
+      },
+      {
+        "from": 9,
+        "to": 9,
+        "R_pu": "inf",
+        "X_pu": "inf",
+        "B_pu": 0.19,
+        "G_pu": 0,
+        "turns_ratio": 1
+      }
+    ]
+  },
+  "apparatuses": [
+    {
+      "bus": 1,
+      "type": 0,
+      "parameters": {
+        "J": 3.5,
+        "D": 5,
+        "wL": 0.1,
+        "R": 0.01
+      }
+    },
+    {
+      "bus": 2,
+      "type": 0,
+      "parameters": {
+        "J": 3.5,
+        "D": 5,
+        "wL": 0.1,
+        "R": 0.01
+      }
+    },
+    {
+      "bus": 3,
+      "type": 0,
+      "parameters": {
+        "J": 3.5,
+        "D": 5,
+        "wL": 0.1,
+        "R": 0.01
+      }
+    },
+    {
+      "bus": 6,
+      "type": 0,
+      "parameters": {
+        "J": 3.5,
+        "D": 5,
+        "wL": 0.1,
+        "R": 0.01
+      }
+    },
+    {
+      "bus": 8,
+      "type": 0,
+      "parameters": {
+        "J": 3.5,
+        "D": 5,
+        "wL": 0.1,
+        "R": 0.01
+      }
+    }
+  ]
+}

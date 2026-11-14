@@ -1,5 +1,5 @@
 function OpenConfig(filename)
-% Open the modal config workbook on an interactive desktop.
+% Open the modal config JSON on an interactive desktop.
 % A batch session, and a Linux session with no display, prints the path.
 
 if exist('batchStartupOptionUsed', 'builtin') && batchStartupOptionUsed

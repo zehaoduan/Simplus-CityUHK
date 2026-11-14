@@ -1,0 +1,91 @@
+{
+  "notes": {
+    "bus_type": "1=slack, 2=PV, 3=PQ (DC: 1=slack/V, 3=P)",
+    "ac_or_dc": "1=AC, 2=DC",
+    "power_flow_algorithm": "1=Gauss-Seidel, 2=Newton-Raphson",
+    "line_form": "ieee uses R,X,B,G,turns_ratio; toolbox uses R,wL,wC,G,turns_ratio",
+    "apparatus_type": "0-9 SM; 10-19 GFL; 20-29 GFM; 30-39 SM full; 40-49 SM Cyprus; 90 AC infinite; 100 AC floating; 1010 DC buck; 1090 DC infinite; 1100 DC floating; 2000-2009 interlink"
+  },
+  "basic": {
+    "sampling_frequency_Hz": 50000,
+    "base_frequency_Hz": 50,
+    "base_power_VA": 1,
+    "base_voltage_V": 1
+  },
+  "advance": {
+    "discretization_method": 2,
+    "linearization_times": 1,
+    "discretization_damping_flag": 1,
+    "direct_feedthrough": 0,
+    "power_flow_algorithm": 1,
+    "create_simulink_model": 1,
+    "plot_pole_map": 1,
+    "plot_admittance": 1,
+    "print_output": 1,
+    "modal_analysis": 0
+  },
+  "buses": [
+    {
+      "bus": 1,
+      "type": 1,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0,
+      "PLi_pu": 0,
+      "QLi_pu": 0,
+      "Qmin_pu": -1,
+      "Qmax_pu": 1,
+      "area": 1,
+      "ac_or_dc": 1
+    },
+    {
+      "bus": 2,
+      "type": 3,
+      "Vsp_pu": 1,
+      "theta_rad": 0,
+      "PGi_pu": 0,
+      "QGi_pu": 0.0001,
+      "PLi_pu": 0,
+      "QLi_pu": 0,
+      "Qmin_pu": -1,
+      "Qmax_pu": 1,
+      "area": 1,
+      "ac_or_dc": 1
+    }
+  ],
+  "lines": {
+    "form": "toolbox",
+    "branches": {
+      "from": 1,
+      "to": 2,
+      "R_pu": 0.02,
+      "wL_pu": 0.1,
+      "wC_pu": 0,
+      "G_pu": 0,
+      "turns_ratio": 1
+    }
+  },
+  "apparatuses": [
+    {
+      "bus": 1,
+      "type": 90
+    },
+    {
+      "bus": 2,
+      "type": 20,
+      "parameters": {
+        "wLf": 0.05,
+        "Rf": 0.01,
+        "wCf": 0.02,
+        "wLc": 0.01,
+        "Rc": 0.002,
+        "Xov": 0,
+        "Dw": 0.05,
+        "fdroop": 5,
+        "fvdq": 300,
+        "fidq": 600
+      }
+    }
+  ]
+}

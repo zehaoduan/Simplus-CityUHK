@@ -1,5 +1,5 @@
 clear; clc; close all;
 
-UserData = 'input.xlsx';
+UserData = 'input.json';
 
 SimplusGT.Toolbox.Main();

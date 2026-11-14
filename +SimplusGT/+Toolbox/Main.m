@@ -29,8 +29,11 @@ cd(pathstr);                            % Change the current address
 % ==================================================
 fprintf('Loading data, please wait a second...\n')
 
+% ### Load JSON netlist
+UserNetlist = SimplusGT.IO.ReadUserData(UserData);
+
 % ### Re-arrange basic settings
-ListBasic = xlsread(UserData,'Basic');
+ListBasic = UserNetlist.ListBasic;
 Fs = ListBasic(1);
 Ts = 1/Fs;              % (s), sampling period
 Fbase = ListBasic(2);   % (Hz), base frequency
@@ -42,7 +45,7 @@ Ybase = 1/Zbase;        % (S), base admittance
 Wbase = Fbase*2*pi;     % (rad/s), base angular frequency
 
 % ### Re-arrange advanced settings
-ListAdvance = xlsread(UserData,'Advance');
+ListAdvance = UserNetlist.ListAdvance;
 Flag_PowerFlowAlgorithm   	= ListAdvance(5);
 Enable_CreateSimulinkModel	= ListAdvance(6);
 Enable_PlotPole           	= ListAdvance(7);
@@ -51,16 +54,16 @@ Enable_PrintOutput       	= ListAdvance(9);
 Enable_Participation        = ListAdvance(10);
 
 % ### Re-arrange the bus netlist
-[ListBus,N_Bus] = SimplusGT.Toolbox.RearrangeListBus(UserData);
+[ListBus,N_Bus] = SimplusGT.Toolbox.RearrangeListBus(UserNetlist.ListBus);
 
 ListBus_=ListBus; % temparary added by Yue to save the original data
 
 % ### Re-arrange the line netlist
-[ListLine,N_Branch.N_Bus_] = SimplusGT.Toolbox.RearrangeListLine(UserData,ListBus);
+[ListLine,N_Branch.N_Bus_] = SimplusGT.Toolbox.RearrangeListLine(UserNetlist.ListLine,UserNetlist.ListLineIEEE,UserNetlist.LineForm,ListBus);
 DcAreaFlag = find(ListBus(:,12)==2);
 
 % ### Re-arrange the apparatus netlist
-[ApparatusBus,ApparatusType,Para,N_Apparatus] = SimplusGT.Toolbox.RearrangeListApparatus(UserData,Wbase,ListBus);
+[ApparatusBus,ApparatusType,Para,N_Apparatus] = SimplusGT.Toolbox.RearrangeListApparatus(UserNetlist.Apparatus,Wbase,ListBus);
 % The names of "ApparatusType" and "Para" can not be changed, because they
 % will also be used in simulink model.
 
@@ -205,11 +208,16 @@ fprintf('==================================\n')
 fprintf('Calculatting pole/zero...\n')
 pole_sys = pole(GsysDSS)/2/pi;
 %fprintf('Checking if the system is stable:\n')
+Flag_Proper = true;
 if isempty(find(real(pole_sys)>1e-8, 1))
     fprintf('Stable!\n');
+    Flag_Stable = true;
 else
     fprintf('Warning: Unstable!\n')
+    Flag_Stable = false;
 end
+SimplusGT.IO.WriteResults(SimplusGT.IO.SiblingName(UserData, '_results.json'), ...
+    UserData, Flag_Proper, Flag_Stable, ListPowerFlow, pole_sys);
 
 %%
 % ==================================================
@@ -329,7 +337,7 @@ fprintf('==================================\n')
 if (Enable_Participation == 1) && (isempty(DcAreaFlag))
     SimplusGT.Modal.ModalInitialise;
     %SimplusGT.Modal.ModalAnalysis;
-    fprintf('Generating GreyboxConfg.xlsx for user to config Greybox analysis.\n');    
+    fprintf('Generating ModalConfig JSON for user to config Greybox analysis.\n');    
 else
     fprintf('Warning: The modal (participation) analysis is disabled or the power system has a dc area.');
 end
