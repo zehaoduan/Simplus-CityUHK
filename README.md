@@ -62,7 +62,7 @@ pole_sys = pole(GsysDSS)/2/pi;
 
 ## `input.json`
 
-Pretty-printed JSON with named fields. Top-level keys: `notes` (ignored by the program), `basic`, `advance`, `buses`, `lines`, `apparatuses`. Infinity in line data is the string `"inf"`. An interlink apparatus uses `"bus": [3, 2]`. Omitted apparatus parameters keep the toolbox defaults.
+Pretty-printed JSON with named fields. Top-level keys: `notes` (ignored by the program), `basic`, `advance`, `buses`, `lines`, `apparatuses`. Infinity in line data is the string `"inf"`. An interlink apparatus uses `"bus": [3, 2]`. Omitted apparatus parameters keep the toolbox defaults. Every field, apparatus code, and parameter default is listed in [help.md](help.md).
 
 `basic`:
 
