@@ -48,7 +48,7 @@ Order inside `SimplusGT.Toolbox.Main`:
 4. Reject the model if it is improper (more zeros than poles). This case printed `Proper!` and built the minimum realization `GminSS`.
 5. Poles and the stability test.
 6. Optional Simulink model `mymodel_v1`. Skipped when the flag is 0, and also forced off when `N_Bus >= 150`.
-7. Optional pole map and admittance Bode plot.
+7. Optional pole map and admittance Bode plot. When a plot is drawn, the finished figure is written next to the netlist as `<stem>_pole_map.jpg` or `<stem>_admittance.jpg`, and a file already at that path is replaced.
 8. Optional participation analysis (`SimplusGT.Modal.ModalInitialise`).
 
 Stability test, as coded:

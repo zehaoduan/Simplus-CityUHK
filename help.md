@@ -126,8 +126,8 @@ The pole calculation in `Main.m` reads fields 5 through 10 only. Fields 1 throug
 | `direct_feedthrough` | `1` on, `0` off | Simulink direct feedthrough of the apparatus block. |
 | `power_flow_algorithm` | `1` Gauss-Seidel, `2` Newton-Raphson | Any other value errors. If any bus has `ac_or_dc` equal to 2, the run forces Gauss-Seidel and prints a warning. |
 | `create_simulink_model` | `1` build `mymodel_v1`, `0` skip | Forced off, with a warning, when there are 150 buses or more. |
-| `plot_pole_map` | `1` plot, `0` skip | Two figures, full and zoomed. Both axes are in Hz. `pole_sys = pole(GsysDSS)/(2*pi)`. |
-| `plot_admittance` | `1` plot, `0` skip | Bode magnitude of the driving-point admittance at each active apparatus bus, from 0.1 Hz to 10 kHz. |
+| `plot_pole_map` | `1` plot, `0` skip | One figure with two subplots, global and zoomed. Both axes are in Hz. `pole_sys = pole(GsysDSS)/(2*pi)`. When the flag is 1, the figure is also written to `<stem>_pole_map.jpg`, replacing any file already at that path. |
+| `plot_admittance` | `1` plot, `0` skip | Bode magnitude of the driving-point admittance at each active apparatus bus, from 0.1 Hz to 10 kHz. When the flag is 1, the figure is also written to `<stem>_admittance.jpg`, replacing any file already at that path. |
 | `print_output` | `1` print, `0` skip | Prints the power flow as `\| bus \| P \| Q \| V \| angle \| omega \|` and the port lists. P and Q in that print are in load convention: positive when power flows from the bus into the apparatus. |
 | `modal_analysis` | `1` or `0` | `1` writes `Examples/ParticipationAnalysis/ModalConfig_<name>.json` and returns. The participation math stays off until you edit that file and call `SimplusGT.Modal.ModalAnalysis`. `1` is ignored, with a warning, when any bus is DC. |
 

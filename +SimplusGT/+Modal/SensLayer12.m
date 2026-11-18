@@ -105,5 +105,7 @@ grid on;
 
 TitStr = ['Mode: ',num2str(ModeSel,'%.2f'), ' Hz'];
 SimplusGT.mtit(TitStr, 'color',[1 0 0], 'xoff', -0.3);
+jpgName = SimplusGT.IO.SiblingName(evalin('base','UserData'), sprintf('_sensitivity_mode%d.jpg', modei));
+SimplusGT.IO.SaveFigureJpg(h, jpgName);
 
 end

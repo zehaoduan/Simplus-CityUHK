@@ -23,7 +23,7 @@ for i=1:AxisNum
     else
     end  
 close(figure(2000+AxisSel(i)));
-figure(2000+AxisSel(i));
+fig = figure(2000+AxisSel(i));
 pin = 1;   %pointer to input
 pout = 1;  %pointer to output
 CountLegend = 0;
@@ -52,6 +52,9 @@ for k = 1:N_Apparatus
 end
 legend(VecLegend);
 SimplusGT.mtit(title);
+axisTag = {'dd','dq','qd','qq'};
+jpgName = SimplusGT.IO.SiblingName(evalin('base','UserData'), ['_bode_' axisTag{AxisSel(i)} '.jpg']);
+SimplusGT.IO.SaveFigureJpg(fig, jpgName);
 end
 
 end

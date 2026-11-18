@@ -272,7 +272,7 @@ figure_n = 1000;
 if Enable_PlotPole
     fprintf('Plotting pole map...\n')
     figure_n = figure_n+1;
-    figure(figure_n);
+    fig = figure(figure_n);
     subplot(1,2,1)
     scatter(real(pole_sys),imag(pole_sys),'x','LineWidth',1.5); hold on; grid on;
     xlabel('Real Part (Hz)');
@@ -288,7 +288,8 @@ if Enable_PlotPole
     plot([-80,0], [-80,0]*10, '--k','LineWidth',2,'Color','blue')
     plot([-80,0], [80,0]*10, '--k','LineWidth',2,'Color','blue')
     legend('mode','10% damping line')
-    
+    SimplusGT.IO.SaveFigureJpg(fig, SimplusGT.IO.SiblingName(UserData, '_pole_map.jpg'));
+
     %SimplusGT.mtit('Pole Map');
 else
     fprintf('Warning: The default plot of pole map is disabled.\n')
@@ -301,7 +302,7 @@ omega_pn = [-flip(omega_p),omega_p];
 if Enable_PlotAdmittance
     fprintf('Plotting admittance spectrum...')
   	figure_n = figure_n+1;
- 	figure(figure_n);
+ 	fig = figure(figure_n);
     CountLegend = 0;
     VecLegend = {};
     for k = 1:N_Bus
@@ -321,6 +322,7 @@ if Enable_PlotAdmittance
     xlabel('Frequency (Hz)');
     ylabel('Magnitude (pu)');
     SimplusGT.mtit('Admittance Spectrum');
+    SimplusGT.IO.SaveFigureJpg(fig, SimplusGT.IO.SiblingName(UserData, '_admittance.jpg'));
 else
     fprintf('Warning: The default plot of admittance spectrum is disabled.\n')
 end
